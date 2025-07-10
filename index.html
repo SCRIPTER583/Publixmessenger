@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Public Messenger</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
-      --bg: #f0f2f5;
+      --bg: #ffffff;
       --text: #1c1e21;
       --bubble: #e4e6eb;
       --self: #0084ff;
@@ -19,16 +19,15 @@
     }
     body {
       margin: 0;
-      padding: 0;
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', sans-serif;
+      font-family: "Segoe UI", sans-serif;
+      height: 100vh;
       overflow: hidden;
     }
     #loginPage, #chatPage {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
+      width: 100vw;
+      height: 100vh;
       display: none;
       flex-direction: column;
       justify-content: center;
@@ -41,20 +40,21 @@
       background: white;
       padding: 20px;
       border-radius: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
       width: 90%;
       max-width: 400px;
     }
     .input {
       margin: 10px 0;
       width: 100%;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 12px;
+      border-radius: 12px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
     button {
-      padding: 10px;
-      border-radius: 10px;
+      padding: 12px;
+      border-radius: 12px;
       border: none;
       background: var(--self);
       color: white;
@@ -62,195 +62,292 @@
       cursor: pointer;
       width: 100%;
       margin-top: 10px;
+      font-size: 16px;
+    }
+    #topBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 15px;
+      background: var(--bg);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      height: 50px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #topBar h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+    #settingsBtn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: auto;
+      width: auto;
+      height: auto;
+    }
+    #settingsMenu {
+      position: fixed;
+      top: 0;
+      right: -250px;
+      width: 220px;
+      height: 100%;
+      background: white;
+      transition: right 0.3s ease;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 999;
+    }
+    #settingsMenu.active {
+      right: 0;
+    }
+    #chatPage {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      padding-top: 50px;
+      box-sizing: border-box;
     }
     #chat {
       flex: 1;
       overflow-y: auto;
-      width: 100%;
       padding: 10px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
     }
     .message {
       background: var(--bubble);
-      margin: 5px;
-      padding: 10px;
-      border-radius: 12px;
+      color: var(--text);
+      margin: 5px 10px;
+      padding: 10px 15px;
+      border-radius: 20px;
       max-width: 80%;
+      align-self: flex-start;
+      word-wrap: break-word;
+      animation: popIn 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .self {
       background: var(--self);
       color: white;
       align-self: flex-end;
     }
+    .profile {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: gray;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
     #inputBar {
       display: flex;
       padding: 10px;
       background: white;
-      border-top: 1px solid #ccc;
+      border-top: 1px solid #ddd;
+      width: 100%;
+      box-sizing: border-box;
     }
     #inputBar input {
       flex: 1;
       padding: 10px;
       border-radius: 10px;
       border: 1px solid #ccc;
+      font-size: 16px;
     }
     #inputBar button {
       margin-left: 10px;
     }
-    #settingsBtn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-    #settingsMenu {
-      position: absolute;
-      top: 50px;
-      right: 10px;
-      background: white;
-      border-radius: 10px;
-      padding: 10px;
-      display: none;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
-    #settingsMenu.active {
-      display: block;
+    #typing {
+      font-size: 12px;
+      color: #888;
+      margin: 5px 15px 5px;
     }
   </style>
 </head>
 <body>
-  <div id="loginPage" class="active">
-    <div class="box">
-      <input id="email" type="email" class="input" placeholder="Email">
-      <input id="password" type="password" class="input" placeholder="Password">
-      <button onclick="signUp()">Sign Up</button>
-      <button onclick="login()">Login</button>
-    </div>
-  </div>
 
-  <div id="chatPage">
+<div id="loginPage" class="active">
+  <div class="box">
+    <input id="email" type="email" class="input" placeholder="Email" />
+    <input id="password" type="password" class="input" placeholder="Password" />
+    <button onclick="signUp()">Sign Up</button>
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<div id="chatPage">
+  <div id="topBar">
+    <h2>Chats</h2>
     <button id="settingsBtn" onclick="toggleSettings()">⚙️</button>
-    <div id="settingsMenu">
-      <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-      <button onclick="logout()">Logout</button>
-    </div>
-    <div id="chat"></div>
-    <div id="inputBar">
-      <input id="msgInput" type="text" placeholder="Type a message...">
-      <button onclick="sendMessage()">Send</button>
-    </div>
   </div>
- <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
-      authDomain: "publicmessenger-1a1a2.firebaseapp.com",
-      databaseURL: "https://publicmessenger-1a1a2-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "publicmessenger-1a1a2",
-      storageBucket: "publicmessenger-1a1a2.appspot.com",
-      messagingSenderId: "786562136202",
-      appId: "1:786562136202:web:355d776f74ef55158bd573"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+  <div id="settingsMenu">
+    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+    <button onclick="logout()">🚪 Logout</button>
+    <button onclick="saveSettings()">💾 Save</button>
+  </div>
 
-    const loginPage = document.getElementById("loginPage");
-    const chatPage = document.getElementById("chatPage");
-    const chat = document.getElementById("chat");
-    const msgInput = document.getElementById("msgInput");
+  <div id="chat"></div>
+  <div id="typing"></div>
+  <div id="inputBar">
+    <input id="msgInput" type="text" placeholder="Type a message..." oninput="showTyping()" />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
 
-    let currentUser = null;
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
+    authDomain: "publicmessenger-1a1a2.firebaseapp.com",
+    databaseURL: "https://publicmessenger-1a1a2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "publicmessenger-1a1a2",
+    storageBucket: "publicmessenger-1a1a2.appspot.com",
+    messagingSenderId: "786562136202",
+    appId: "1:786562136202:web:355d776f74ef55158bd573"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-    function signUp() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => alert("Signed Up"))
-        .catch(err => alert(err.message));
-    }
+  const loginPage = document.getElementById("loginPage");
+  const chatPage = document.getElementById("chatPage");
+  const chat = document.getElementById("chat");
+  const msgInput = document.getElementById("msgInput");
+  const typing = document.getElementById("typing");
 
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {})
-        .catch(err => alert(err.message));
-    }
+  let currentUser = null;
+  let typingTimeout = null;
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loginPage.classList.remove("active");
-        chatPage.classList.add("active");
-        chat.innerHTML = ''; // clear previous
-        loadMessages();
-      } else {
-        chatPage.classList.remove("active");
-        loginPage.classList.add("active");
-      }
-    });
+  function signUp() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(() => alert("Signed Up"))
+      .catch(err => alert(err.message));
+  }
 
-    function sendMessage() {
-      const text = msgInput.value;
-      if (!text) return;
-      const msg = {
-        uid: currentUser.uid,
-        text,
-        timestamp: Date.now()
-      };
-      db.ref("messages").push(msg);
-      msgInput.value = "";
-    }
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, password)
+      .catch(err => alert(err.message));
+  }
 
-    function loadMessages() {
-      db.ref("messages").off();
-      db.ref("messages").on("child_added", snap => {
-        const msg = snap.val();
-        const div = document.createElement("div");
-        div.classList.add("message");
-        if (msg.uid === currentUser.uid) div.classList.add("self");
-        div.textContent = msg.text;
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-      });
-    }
-
-    function logout() {
-      auth.signOut();
-    }
-
-    function toggleSettings() {
-      document.getElementById("settingsMenu").classList.toggle("active");
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-    }
-    // Typing Indicator Setup
-let typingTimeout;
-msgInput.addEventListener("input", () => {
-  db.ref("typing/" + currentUser.uid).set(true);
-  clearTimeout(typingTimeout);
-  typingTimeout = setTimeout(() => {
-    db.ref("typing/" + currentUser.uid).remove();
-  }, 2000);
-});
-
-// Show who is typing
-db.ref("typing").on("value", snap => {
-  document.querySelectorAll(".typing").forEach(e => e.remove());
-  snap.forEach(child => {
-    if (child.key !== currentUser.uid) {
-      const typing = document.createElement("div");
-      typing.className = "typing message";
-      typing.textContent = "Someone is typing...";
-      chat.appendChild(typing);
-      chat.scrollTop = chat.scrollHeight;
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      loginPage.classList.remove("active");
+      chatPage.classList.add("active");
+      chat.innerHTML = "";
+      loadMessages();
+    } else {
+      chatPage.classList.remove("active");
+      loginPage.classList.add("active");
     }
   });
-});
-  </script>
+
+  function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!text) return;
+    db.ref("messages").push({
+      uid: currentUser.uid,
+      email: currentUser.email,
+      text,
+      timestamp: Date.now()
+    });
+    db.ref("typing").set("");
+    msgInput.value = "";
+  }
+
+  function loadMessages() {
+    db.ref("messages").off();
+    db.ref("messages").on("child_added", snap => {
+      const msg = snap.val();
+      const div = document.createElement("div");
+      div.classList.add("message");
+      if (msg.uid === currentUser.uid) div.classList.add("self");
+
+      const profile = document.createElement("div");
+      profile.classList.add("profile");
+      profile.style.background = colorFromEmail(msg.email);
+      profile.textContent = msg.email[0].toUpperCase();
+
+      const text = document.createElement("span");
+      text.innerHTML = `<strong>${msg.email.split("@")[0]}</strong><br>${msg.text}`;
+
+      div.appendChild(profile);
+      div.appendChild(text);
+      chat.appendChild(div);
+      setTimeout(() => chat.scrollTop = chat.scrollHeight, 100);
+    });
+  }
+
+  function logout() {
+    auth.signOut();
+  }
+
+  function toggleSettings() {
+    document.getElementById("settingsMenu").classList.toggle("active");
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+  }
+
+  function saveSettings() {
+    alert("Settings saved!");
+  }
+
+  function colorFromEmail(email) {
+    let hash = 0;
+    for (let i = 0; i < email.length; i++) {
+      hash = email.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return `hsl(${hash % 360}, 60%, 60%)`;
+  }
+
+  function showTyping() {
+    db.ref("typing").set(currentUser.email);
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      db.ref("typing").set("");
+    }, 2000);
+  }
+
+  db.ref("typing").on("value", snap => {
+    const val = snap.val();
+    if (val && val !== currentUser?.email) {
+      typing.textContent = `${val.split("@")[0]} is typing...`;
+    } else {
+      typing.textContent = "";
+    }
+  });
+</script>
 </body>
 </html>
