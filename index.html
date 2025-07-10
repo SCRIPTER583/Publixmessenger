@@ -5,81 +5,225 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Public Messenger</title>
   <style>
+    :root {
+      --bg: #f2f3f5;
+      --fg: #ffffff;
+      --text: #222;
+      --bubble: #e4e6eb;
+    }
+    body.dark {
+      --bg: #18191a;
+      --fg: #242526;
+      --text: #ddd;
+      --bubble: #3a3b3c;
+    }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
-      color: #222;
-      height: 100vh;
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      overflow: hidden;
+    }
+    #app {
+      width: 100vw;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
+      background: var(--fg);
+      position: relative;
+    }
+    header {
+      padding: 10px 16px;
+      background: var(--fg);
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      z-index: 2;
+    }
+    #settings-panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      max-width: 300px;
+      height: 100dvh;
+      background: var(--fg);
+      box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+      padding: 16px;
+      box-sizing: border-box;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      z-index: 5;
+    }
+    #settings-panel.show {
+      right: 0;
+    }
+    #settings-panel input, #settings-panel select, #settings-panel button {
+      margin-bottom: 12px;
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 10px;
+      border: none;
     }
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
-      background: #e5e5e5;
+      padding: 16px;
+      background: var(--bg);
     }
     .message {
-      background: #fff;
+      background: var(--bubble);
+      color: var(--text);
+      padding: 10px 14px;
       margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      max-width: 80%;
-      animation: bounceIn 0.3s ease forwards;
+      border-radius: 18px;
+      max-width: 85%;
+      word-wrap: break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(10px) scale(0.95);
+      animation: msgEnter 0.3s ease-out forwards;
+      will-change: opacity, transform;
     }
-    .meta {
+    .message .meta {
       font-size: 12px;
-      color: #555;
       margin-bottom: 4px;
     }
-    @keyframes bounceIn {
-      0% { transform: scale(0.95); opacity: 0; }
-      80% { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(1); }
-    }
     #typingIndicator {
+      padding: 8px 20px;
+      font-size: 14px;
+      color: gray;
       font-style: italic;
-      font-size: 13px;
-      padding: 5px 15px;
-      color: #666;
     }
     form {
       display: flex;
-      padding: 10px;
-      background: #fff;
+      padding: 12px;
+      background: var(--fg);
+      border-top: 1px solid #ccc;
     }
     form input {
       flex: 1;
       padding: 10px;
-      border-radius: 20px;
+      font-size: 14px;
+      border-radius: 18px;
       border: 1px solid #ccc;
-      font-size: 16px;
+      margin-right: 8px;
     }
     form button {
-      padding: 10px 20px;
-      margin-left: 10px;
-      border-radius: 20px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 18px;
       background: #007bff;
       color: white;
-      border: none;
       font-weight: bold;
+    }
+    #login {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--fg);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 90%;
+      max-width: 360px;
+      z-index: 10;
+      transition: all 0.3s ease;
+      opacity: 0;
+    }
+    #login.show {
+      display: flex;
+      opacity: 1;
+    }
+    #login input, #login button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+    }
+    .badge {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 9;
+      display: none;
+    }
+    #overlay.show {
+      display: block;
+    }
+    @keyframes msgEnter {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+      }
+      80% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.02);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+      }
     }
   </style>
 </head>
 <body>
+  <div id="overlay"></div>
+  <div id="app" class="hidden">
+    <header>
+      <span id="user-display">Messenger</span>
+      <button id="settings-btn">⚙️</button>
+    </header>
+    <div id="messages"></div>
+    <div id="typingIndicator"></div>
+    <form id="msg-form">
+      <input type="text" id="msg" placeholder="Type a message...">
+      <button type="submit">Send</button>
+    </form>
+  </div>
 
-<div id="messages"></div>
-<div id="typingIndicator"></div>
+  <div id="login">
+    <h2>Login / Sign Up</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button id="signup">Sign Up</button>
+    <button id="login-btn">Log In</button>
+  </div>
 
-<form id="form">
-  <input id="input" autocomplete="off" placeholder="Type a message..." />
-  <button>Send</button>
-</form>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <div id="settings-panel">
+    <label>Title:</label>
+    <input type="text" id="title" placeholder="e.g. Chill Gamer">
+    <label>Color Badge:</label>
+    <select id="badge-color">
+      <option value=\"blue\">🔵 Blue</option>
+      <option value=\"red\">🔴 Red</option>
+      <option value=\"green\">🟢 Green</option>
+      <option value=\"purple\">🟣 Purple</option>
+    </select>
+    <button id=\"save-settings\">Save</button>
+    <button id=\"toggle-dark\">Toggle Dark Mode</button>
+    <button id=\"logout\">Logout</button>
+  </div><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
@@ -91,65 +235,138 @@ const firebaseConfig = {
   appId: "1:786562136202:web:355d776f74ef55158bd573"
 };
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.database();
 
-const messagesRef = db.ref("messages");
-const typingRef = db.ref("typing");
+const loginUI = document.getElementById('login');
+const appUI = document.getElementById('app');
+const overlay = document.getElementById('overlay');
+const form = document.getElementById('msg-form');
+const input = document.getElementById('msg');
+const messages = document.getElementById('messages');
+const typingIndicator = document.getElementById('typingIndicator');
+const settingsPanel = document.getElementById('settings-panel');
+const settingsBtn = document.getElementById('settings-btn');
 
-const input = document.getElementById("input");
-const form = document.getElementById("form");
-const messages = document.getElementById("messages");
-const typingIndicator = document.getElementById("typingIndicator");
+let currentUser = null;
+let badgeColor = localStorage.getItem('badgeColor') || 'blue';
+let userTitle = localStorage.getItem('userTitle') || 'User';
 
-let username = localStorage.getItem("username");
-if (!username) {
-  username = prompt("Enter your name:");
-  localStorage.setItem("username", username || "Anonymous");
-}
-
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  if (!input.value) return;
-
-  const msg = {
-    user: username,
-    text: input.value,
-    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-  };
-  messagesRef.push(msg);
-  input.value = "";
-  typingRef.set(""); // Clear typing status
-});
-
-input.addEventListener("input", () => {
-  typingRef.set(username + " is typing...");
-  clearTimeout(input._typingTimeout);
-  input._typingTimeout = setTimeout(() => typingRef.set(""), 3000);
-});
-
-messagesRef.on("child_added", (snap) => {
-  const msg = snap.val();
-  const div = document.createElement("div");
-  div.className = "message";
-  div.innerHTML = `<div class="meta"><b>${msg.user}</b> • ${msg.time}</div>${msg.text}`;
+function appendMessage(user, text, time, color, title) {
+  const div = document.createElement('div');
+  div.className = 'message';
+  div.innerHTML = `
+    <div class="meta"><span class="badge" style="background:${color}"></span><b>${title}</b> • ${time}</div>
+    ${text}
+  `;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
+}
 
-  // Push Notification
-  if (Notification.permission === "granted" && msg.user !== username) {
-    new Notification(`${msg.user}: ${msg.text}`);
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text || !currentUser) return;
+  const msg = {
+    uid: currentUser.uid,
+    title: userTitle,
+    text,
+    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    color: badgeColor
+  };
+  db.ref('messages').push(msg);
+  input.value = '';
+  db.ref('typing/' + currentUser.uid).remove();
+});
+
+input.addEventListener('input', () => {
+  if (!currentUser) return;
+  db.ref('typing/' + currentUser.uid).set(userTitle + ' is typing...');
+  clearTimeout(input._timeout);
+  input._timeout = setTimeout(() => {
+    db.ref('typing/' + currentUser.uid).remove();
+  }, 3000);
+});
+
+db.ref('messages').on('child_added', snap => {
+  const m = snap.val();
+  appendMessage(m.title, m.text, m.time, m.color || 'blue', m.title);
+  if (Notification.permission === 'granted' && m.uid !== currentUser?.uid) {
+    new Notification(`${m.title}: ${m.text}`);
   }
 });
 
-typingRef.on("value", (snap) => {
-  typingIndicator.textContent = snap.val() || "";
+db.ref('typing').on('value', snap => {
+  const val = snap.val() || {};
+  const entries = Object.values(val).filter(v => v);
+  typingIndicator.textContent = entries.length ? entries[0] : '';
+});
+</script><script>
+document.getElementById('signup').onclick = async () => {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  try {
+    await auth.createUserWithEmailAndPassword(email, pass);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+document.getElementById('login-btn').onclick = async () => {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    appUI.style.display = 'flex';
+    loginUI.classList.remove('show');
+    document.getElementById('user-display').innerHTML = `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
+    if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+    Notification.requestPermission();
+  } else {
+    loginUI.classList.add('show');
+    appUI.style.display = 'none';
+  }
 });
 
-// Ask for notification permission
-if ("Notification" in window && Notification.permission !== "granted") {
-  Notification.requestPermission();
-}
-</script>
+document.getElementById('settings-btn').onclick = () => {
+  settingsPanel.classList.add('show');
+  overlay.classList.add('show');
+  document.getElementById('title').value = userTitle;
+  document.getElementById('badge-color').value = badgeColor;
+};
 
+document.getElementById('save-settings').onclick = () => {
+  userTitle = document.getElementById('title').value || 'User';
+  badgeColor = document.getElementById('badge-color').value || 'blue';
+  localStorage.setItem('userTitle', userTitle);
+  localStorage.setItem('badgeColor', badgeColor);
+  document.getElementById('user-display').innerHTML = `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
+  settingsPanel.classList.remove('show');
+  overlay.classList.remove('show');
+};
+
+document.getElementById('toggle-dark').onclick = () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+};
+
+document.getElementById('logout').onclick = () => {
+  auth.signOut();
+  location.reload();
+};
+
+overlay.onclick = () => {
+  settingsPanel.classList.remove('show');
+  overlay.classList.remove('show');
+};
+</script>
 </body>
 </html>
