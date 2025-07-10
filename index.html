@@ -28,7 +28,7 @@
     #app {
       width: 100vw;
       height: 100vh;
-      display: flex;
+      display: none;
       flex-direction: column;
       background: var(--fg);
     }
@@ -40,7 +40,6 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      z-index: 2;
     }
     #settings-panel {
       position: fixed;
@@ -60,13 +59,6 @@
     }
     #settings-panel.show {
       right: 0;
-    }
-    #settings-panel input, #settings-panel select, #settings-panel button {
-      margin-bottom: 12px;
-      padding: 8px;
-      font-size: 14px;
-      border-radius: 10px;
-      border: none;
     }
     #messages {
       flex: 1;
@@ -135,15 +127,6 @@
       max-width: 360px;
       z-index: 10;
     }
-    #login.show {
-      display: flex;
-    }
-    #login input, #login button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: none;
-    }
     .badge {
       width: 10px;
       height: 10px;
@@ -182,6 +165,7 @@
 </head>
 <body>
   <div id="overlay"></div>
+
   <div id="app">
     <header>
       <span id="user-display">Messenger</span>
@@ -195,7 +179,7 @@
     </form>
   </div>
 
-  <div id="login" class="show">
+  <div id="login">
     <h2>Login / Sign Up</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
@@ -205,7 +189,7 @@
 
   <div id="settings-panel">
     <label>Title:</label>
-    <input type="text" id="title" placeholder="e.g. Chill Gamer">
+    <input type="text" id="title" placeholder="e.g. CoolKid123">
     <label>Color Badge:</label>
     <select id="badge-color">
       <option value="blue">🔵 Blue</option>
@@ -243,7 +227,6 @@
     const messages = document.getElementById('messages');
     const typingIndicator = document.getElementById('typingIndicator');
     const settingsPanel = document.getElementById('settings-panel');
-    const settingsBtn = document.getElementById('settings-btn');
 
     let currentUser = null;
     let badgeColor = localStorage.getItem('badgeColor') || 'blue';
@@ -252,10 +235,7 @@
     function appendMessage(user, text, time, color, title) {
       const div = document.createElement('div');
       div.className = 'message';
-      div.innerHTML = `
-        <div class="meta"><span class="badge" style="background:${color}"></span><b>${title}</b> • ${time}</div>
-        ${text}
-      `;
+      div.innerHTML = `<div class="meta"><span class="badge" style="background:${color}"></span><b>${title}</b> • ${time}</div>${text}`;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
     }
@@ -323,13 +303,16 @@
       if (user) {
         currentUser = user;
         appUI.style.display = 'flex';
-        loginUI.classList.remove('show');
-        document.getElementById('user-display').innerHTML = `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
-        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+        loginUI.style.display = 'none';
+        document.getElementById('user-display').innerHTML =
+          `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
+        if (localStorage.getItem('darkMode') === 'true') {
+          document.body.classList.add('dark');
+        }
         Notification.requestPermission();
       } else {
-        loginUI.classList.add('show');
         appUI.style.display = 'none';
+        loginUI.style.display = 'flex';
       }
     });
 
@@ -345,7 +328,8 @@
       badgeColor = document.getElementById('badge-color').value || 'blue';
       localStorage.setItem('userTitle', userTitle);
       localStorage.setItem('badgeColor', badgeColor);
-      document.getElementById('user-display').innerHTML = `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
+      document.getElementById('user-display').innerHTML =
+        `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
       settingsPanel.classList.remove('show');
       overlay.classList.remove('show');
     };
