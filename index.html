@@ -22,21 +22,18 @@
       font-family: "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--text);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      height: 100dvh;
+      overflow: hidden;
     }
     #app {
       width: 100%;
       max-width: 600px;
-      height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       background: var(--fg);
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 0;
       overflow: hidden;
+      position: relative;
     }
     header {
       padding: 10px 16px;
@@ -46,20 +43,22 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      z-index: 2;
     }
     #settings-panel {
-      position: absolute;
+      position: fixed;
       top: 0;
-      right: -250px;
-      width: 250px;
-      height: 100%;
+      right: -270px;
+      width: 270px;
+      height: 100dvh;
       background: var(--fg);
-      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      box-shadow: -2px 0 8px rgba(0,0,0,0.3);
       padding: 16px;
       box-sizing: border-box;
       transition: right 0.3s ease;
       display: flex;
       flex-direction: column;
+      z-index: 5;
     }
     #settings-panel.show {
       right: 0;
@@ -192,12 +191,12 @@ const db = firebase.database();
 const $ = id => document.getElementById(id);
 
 const getProfile = () => ({
-  title: localStorage.getItem("profileTitle") || "",
+  title: localStorage.getItem("profileTitle") || "No Title",
   color: localStorage.getItem("profileColor") || "blue"
 });
 
 const saveProfile = () => {
-  localStorage.setItem("profileTitle", $("title").value.slice(0, 30));
+  localStorage.setItem("profileTitle", $("title").value.trim().slice(0, 30));
   localStorage.setItem("profileColor", $("badge-color").value);
   $("settings-panel").classList.remove("show");
 };
@@ -239,7 +238,10 @@ auth.onAuthStateChanged(user => {
       const { user, text, title, color } = snap.val();
       const div = document.createElement("div");
       div.className = "message";
-      div.innerHTML = `<div class="meta"><span class="badge" style="background:${color}"></span> <b>[${title}] ${user}</b></div>${text}`;
+      const displayTitle = title || "No Title";
+      const displayUser = user || "Anonymous";
+      const displayColor = color || "gray";
+      div.innerHTML = `<div class="meta"><span class="badge" style="background:${displayColor}"></span> <b>[${displayTitle}] ${displayUser}</b></div>${text}`;
       $("messages").appendChild(div);
       $("messages").scrollTop = $("messages").scrollHeight;
     });
@@ -258,8 +260,8 @@ $("msg-form").onsubmit = e => {
   db.ref("messages").push({
     user: user.email.split("@")[0],
     text,
-    title,
-    color
+    title: title || "No Title",
+    color: color || "gray"
   });
   $("msg").value = "";
 };
