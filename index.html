@@ -31,6 +31,7 @@
       flex-direction: column;
       width: 100vw;
       height: 100vh;
+      overflow: hidden;
     }
 
     header {
@@ -45,7 +46,7 @@
       z-index: 2;
     }
 
-    #messages {
+    #messages-wrapper {
       flex: 1;
       overflow-y: auto;
       display: flex;
@@ -53,6 +54,7 @@
       padding: 12px;
       gap: 8px;
       background: var(--bg);
+      margin-bottom: 60px; /* leave space for input bar */
     }
 
     .message {
@@ -176,6 +178,7 @@
       font-size: 13px;
       padding: 5px 12px;
       color: gray;
+      background: var(--bg);
     }
   </style>
 </head>
@@ -186,7 +189,9 @@
       <button id="settings-btn">⚙️</button>
     </header>
 
-    <div id="messages"></div>
+    <div id="messages-wrapper">
+      <div id="messages"></div>
+    </div>
     <div id="typingIndicator"></div>
 
     <div id="input-area">
@@ -350,4 +355,4 @@
     };
   </script>
 </body>
-</html>
+  </html>
