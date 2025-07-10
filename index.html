@@ -107,6 +107,7 @@
       flex-direction: column;
       gap: 10px;
       z-index: 999;
+      overflow-y: auto;
     }
     #settingsMenu.active {
       right: 0;
@@ -117,6 +118,7 @@
       height: 100vh;
       padding-top: 50px;
       box-sizing: border-box;
+      overflow: hidden;
     }
     #chat {
       flex: 1;
@@ -125,6 +127,7 @@
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      max-height: calc(100vh - 130px);
     }
     .message {
       background: var(--bubble);
@@ -169,6 +172,7 @@
       border-top: 1px solid #ddd;
       width: 100%;
       box-sizing: border-box;
+      z-index: 5;
     }
     #inputBar input {
       flex: 1;
@@ -313,7 +317,8 @@
   }
 
   function toggleSettings() {
-    document.getElementById("settingsMenu").classList.toggle("active");
+    const menu = document.getElementById("settingsMenu");
+    menu.classList.toggle("active");
   }
 
   function toggleDarkMode() {
