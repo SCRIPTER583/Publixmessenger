@@ -112,12 +112,26 @@
       font-weight: bold;
     }
     #login {
-      max-width: 400px;
-      margin: auto;
-      display: flex;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--fg);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      display: none;
       flex-direction: column;
       gap: 10px;
-      padding: 20px;
+      width: 90%;
+      max-width: 360px;
+      z-index: 10;
+      transition: all 0.3s ease;
+      opacity: 0;
+    }
+    #login.show {
+      display: flex;
+      opacity: 1;
     }
     #login input, #login button {
       padding: 10px;
@@ -171,11 +185,9 @@
   <button id="logout">Logout</button>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
 const config = {
   apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
@@ -219,23 +231,37 @@ $("settings-btn").onclick = () => {
 
 $("save-settings").onclick = saveProfile;
 $("toggle-dark").onclick = toggleDark;
-$("logout").onclick = () => auth.signOut();
+
+$("logout").onclick = () => {
+  auth.signOut().then(() => {
+    $("app").classList.add("hidden");
+    $("login").classList.add("show");
+  });
+};
 
 $("signup").onclick = () => {
   auth.createUserWithEmailAndPassword($("email").value, $("password").value).catch(alert);
 };
+
 $("login-btn").onclick = () => {
   auth.signInWithEmailAndPassword($("email").value, $("password").value).catch(alert);
 };
 
 auth.onAuthStateChanged(user => {
-  if(user){
-    $("login").style.display = "none";
-    $("app").classList.remove("hidden");
+  const app = $("app");
+  const login = $("login");
+  const messages = $("messages");
+
+  if (user) {
+    login.classList.remove("show");
+    app.classList.remove("hidden");
+
     $("user-display").innerText = user.email.split("@")[0];
+
     const ref = db.ref("messages");
     ref.off();
-    $("messages").innerHTML = "";
+    messages.innerHTML = "";
+
     ref.on("child_added", snap => {
       const { user, text, title, color } = snap.val();
       const div = document.createElement("div");
@@ -244,12 +270,13 @@ auth.onAuthStateChanged(user => {
       const displayUser = user || "Anonymous";
       const displayColor = color || "gray";
       div.innerHTML = `<div class="meta"><span class="badge" style="background:${displayColor}"></span> <b>[${displayTitle}] ${displayUser}</b></div>${text}`;
-      $("messages").appendChild(div);
-      $("messages").scrollTop = $("messages").scrollHeight;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
     });
   } else {
-    $("app").classList.add("hidden");
-    $("login").style.display = "flex";
+    messages.innerHTML = "";
+    app.classList.add("hidden");
+    login.classList.add("show");
   }
 });
 
@@ -268,6 +295,5 @@ $("msg-form").onsubmit = e => {
   $("msg").value = "";
 };
 </script>
-
 </body>
 </html>
