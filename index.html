@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Public Messenger</title>
   <style>
     :root {
-      --bg: #f2f3f5;
+      --bg: #f0f2f5;
       --fg: #ffffff;
-      --text: #222;
+      --text: #1c1e21;
       --bubble: #e4e6eb;
     }
     body.dark {
@@ -19,7 +19,7 @@
     }
     body {
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -30,16 +30,15 @@
       height: 100vh;
       display: none;
       flex-direction: column;
-      background: var(--fg);
     }
     header {
-      padding: 10px 16px;
       background: var(--fg);
-      font-weight: bold;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     #settings-panel {
       position: fixed;
@@ -47,15 +46,13 @@
       right: -100%;
       width: 100%;
       max-width: 300px;
-      height: 100vh;
+      height: 100%;
       background: var(--fg);
       box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+      transition: right 0.3s ease;
       padding: 16px;
       box-sizing: border-box;
-      transition: right 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      z-index: 5;
+      z-index: 10;
     }
     #settings-panel.show {
       right: 0;
@@ -63,35 +60,34 @@
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 10px;
       background: var(--bg);
     }
     .message {
       background: var(--bubble);
       color: var(--text);
-      padding: 10px 14px;
+      padding: 12px 16px;
       margin-bottom: 10px;
       border-radius: 18px;
       max-width: 85%;
-      word-wrap: break-word;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      word-break: break-word;
+      animation: bounceIn 0.3s ease forwards;
+      transform: scale(0.95);
       opacity: 0;
-      transform: translateY(10px) scale(0.95);
-      animation: msgEnter 0.3s ease-out forwards;
     }
     .message .meta {
       font-size: 12px;
       margin-bottom: 4px;
     }
     #typingIndicator {
-      padding: 8px 20px;
-      font-size: 14px;
-      color: gray;
+      padding: 5px 15px;
+      font-size: 13px;
       font-style: italic;
+      color: gray;
     }
     form {
       display: flex;
-      padding: 12px;
+      padding: 10px;
       background: var(--fg);
       border-top: 1px solid #ccc;
     }
@@ -125,7 +121,7 @@
       gap: 10px;
       width: 90%;
       max-width: 360px;
-      z-index: 10;
+      z-index: 20;
     }
     .badge {
       width: 10px;
@@ -134,38 +130,19 @@
       display: inline-block;
       margin-right: 6px;
     }
-    #overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(2px);
-      z-index: 9;
-      display: none;
-    }
-    #overlay.show {
-      display: block;
-    }
-    @keyframes msgEnter {
+    @keyframes bounceIn {
       0% {
         opacity: 0;
-        transform: translateY(20px) scale(0.9);
-      }
-      80% {
-        opacity: 1;
-        transform: translateY(-2px) scale(1.02);
+        transform: scale(0.8) translateY(20px);
       }
       100% {
-        transform: translateY(0) scale(1);
+        opacity: 1;
+        transform: scale(1) translateY(0);
       }
     }
   </style>
 </head>
 <body>
-  <div id="overlay"></div>
-
   <div id="app">
     <header>
       <span id="user-display">Messenger</span>
@@ -174,22 +151,22 @@
     <div id="messages"></div>
     <div id="typingIndicator"></div>
     <form id="msg-form">
-      <input type="text" id="msg" placeholder="Type a message...">
+      <input type="text" id="msg" placeholder="Type a message..." autocomplete="off"/>
       <button type="submit">Send</button>
     </form>
   </div>
 
   <div id="login">
     <h2>Login / Sign Up</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
     <button id="signup">Sign Up</button>
     <button id="login-btn">Log In</button>
   </div>
 
   <div id="settings-panel">
     <label>Title:</label>
-    <input type="text" id="title" placeholder="e.g. CoolKid123">
+    <input type="text" id="title" placeholder="e.g. CoolKid" />
     <label>Color Badge:</label>
     <select id="badge-color">
       <option value="blue">🔵 Blue</option>
@@ -221,21 +198,20 @@
 
     const loginUI = document.getElementById('login');
     const appUI = document.getElementById('app');
-    const overlay = document.getElementById('overlay');
     const form = document.getElementById('msg-form');
     const input = document.getElementById('msg');
     const messages = document.getElementById('messages');
-    const typingIndicator = document.getElementById('typingIndicator');
     const settingsPanel = document.getElementById('settings-panel');
+    const typingIndicator = document.getElementById('typingIndicator');
 
     let currentUser = null;
     let badgeColor = localStorage.getItem('badgeColor') || 'blue';
     let userTitle = localStorage.getItem('userTitle') || 'User';
 
-    function appendMessage(user, text, time, color, title) {
+    function appendMessage(name, text, time, color) {
       const div = document.createElement('div');
       div.className = 'message';
-      div.innerHTML = `<div class="meta"><span class="badge" style="background:${color}"></span><b>${title}</b> • ${time}</div>${text}`;
+      div.innerHTML = `<div class="meta"><span class="badge" style="background:${color}"></span><b>${name}</b> • ${time}</div>${text}`;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
     }
@@ -267,10 +243,7 @@
 
     db.ref('messages').on('child_added', snap => {
       const m = snap.val();
-      appendMessage(m.title, m.text, m.time, m.color || 'blue', m.title);
-      if (Notification.permission === 'granted' && m.uid !== currentUser?.uid) {
-        new Notification(`${m.title}: ${m.text}`);
-      }
+      appendMessage(m.title, m.text, m.time, m.color || 'blue');
     });
 
     db.ref('typing').on('value', snap => {
@@ -300,6 +273,7 @@
     };
 
     auth.onAuthStateChanged(user => {
+      console.log("[AUTH STATE]", user);
       if (user) {
         currentUser = user;
         appUI.style.display = 'flex';
@@ -309,8 +283,8 @@
         if (localStorage.getItem('darkMode') === 'true') {
           document.body.classList.add('dark');
         }
-        Notification.requestPermission();
       } else {
+        console.log("[AUTH] Logged out. Showing login.");
         appUI.style.display = 'none';
         loginUI.style.display = 'flex';
       }
@@ -318,7 +292,6 @@
 
     document.getElementById('settings-btn').onclick = () => {
       settingsPanel.classList.add('show');
-      overlay.classList.add('show');
       document.getElementById('title').value = userTitle;
       document.getElementById('badge-color').value = badgeColor;
     };
@@ -331,7 +304,6 @@
       document.getElementById('user-display').innerHTML =
         `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
       settingsPanel.classList.remove('show');
-      overlay.classList.remove('show');
     };
 
     document.getElementById('toggle-dark').onclick = () => {
@@ -343,11 +315,6 @@
       auth.signOut();
       location.reload();
     };
-
-    overlay.onclick = () => {
-      settingsPanel.classList.remove('show');
-      overlay.classList.remove('show');
-    };
   </script>
 </body>
-</html>
+  </html>
