@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Public Messenger</title>
   <style>
@@ -26,10 +26,13 @@
       overflow: hidden;
     }
     #app {
+      position: absolute;
+      top: 0; left: 0;
       width: 100vw;
       height: 100vh;
       display: none;
       flex-direction: column;
+      background: var(--bg);
     }
     header {
       background: var(--fg);
@@ -39,6 +42,7 @@
       align-items: center;
       font-weight: bold;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 2;
     }
     #settings-panel {
       position: fixed;
@@ -273,7 +277,6 @@
     };
 
     auth.onAuthStateChanged(user => {
-      console.log("[AUTH STATE]", user);
       if (user) {
         currentUser = user;
         appUI.style.display = 'flex';
@@ -284,7 +287,6 @@
           document.body.classList.add('dark');
         }
       } else {
-        console.log("[AUTH] Logged out. Showing login.");
         appUI.style.display = 'none';
         loginUI.style.display = 'flex';
       }
