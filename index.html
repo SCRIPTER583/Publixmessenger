@@ -84,6 +84,9 @@
       max-width: 85%;
       word-wrap: break-word;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(10px) scale(0.95);
+      animation: msgEnter 0.3s ease-out forwards;
     }
     .message .meta {
       font-size: 12px;
@@ -146,9 +149,38 @@
       display: inline-block;
       margin-right: 6px;
     }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 9;
+      display: none;
+    }
+    #overlay.show {
+      display: block;
+    }
+    @keyframes msgEnter {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+      }
+      80% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.02);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+      }
+    }
   </style>
 </head>
 <body>
+
+<div id="overlay"></div>
 
 <div id="app" class="hidden">
   <header>
@@ -236,13 +268,13 @@ $("logout").onclick = () => {
   auth.signOut().then(() => {
     $("app").classList.add("hidden");
     $("login").classList.add("show");
+    $("overlay").classList.add("show");
   });
 };
 
 $("signup").onclick = () => {
   auth.createUserWithEmailAndPassword($("email").value, $("password").value).catch(alert);
 };
-
 $("login-btn").onclick = () => {
   auth.signInWithEmailAndPassword($("email").value, $("password").value).catch(alert);
 };
@@ -250,10 +282,12 @@ $("login-btn").onclick = () => {
 auth.onAuthStateChanged(user => {
   const app = $("app");
   const login = $("login");
+  const overlay = $("overlay");
   const messages = $("messages");
 
   if (user) {
     login.classList.remove("show");
+    overlay.classList.remove("show");
     app.classList.remove("hidden");
 
     $("user-display").innerText = user.email.split("@")[0];
@@ -273,10 +307,12 @@ auth.onAuthStateChanged(user => {
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
     });
+
   } else {
     messages.innerHTML = "";
     app.classList.add("hidden");
     login.classList.add("show");
+    overlay.classList.add("show");
   }
 });
 
