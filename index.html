@@ -26,13 +26,11 @@
       overflow: hidden;
     }
     #app {
-      width: 100%;
-      max-width: 600px;
+      width: 100vw;
       height: 100dvh;
       display: flex;
       flex-direction: column;
       background: var(--fg);
-      overflow: hidden;
       position: relative;
     }
     header {
@@ -48,8 +46,9 @@
     #settings-panel {
       position: fixed;
       top: 0;
-      right: -270px;
-      width: 270px;
+      right: -100%;
+      width: 100%;
+      max-width: 300px;
       height: 100dvh;
       background: var(--fg);
       box-shadow: -2px 0 8px rgba(0,0,0,0.3);
@@ -67,7 +66,7 @@
       margin-bottom: 12px;
       padding: 8px;
       font-size: 14px;
-      border-radius: 6px;
+      border-radius: 10px;
       border: none;
     }
     #messages {
@@ -118,11 +117,12 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      padding: 20px;
     }
     #login input, #login button {
       padding: 10px;
       font-size: 16px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
     }
     .badge {
@@ -138,7 +138,7 @@
 
 <div id="app" class="hidden">
   <header>
-    <span id="user-display"></span>
+    <span id="user-display">Messenger</span>
     <button id="settings-btn">⚙️</button>
   </header>
   <div id="messages"></div>
@@ -171,9 +171,11 @@
   <button id="logout">Logout</button>
 </div>
 
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
 const config = {
   apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
@@ -266,5 +268,6 @@ $("msg-form").onsubmit = e => {
   $("msg").value = "";
 };
 </script>
+
 </body>
 </html>
