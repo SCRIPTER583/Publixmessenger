@@ -1,235 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mobile Messenger</title>
+  <meta charset="UTF-8">
+  <title>Public Messenger</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
       --bg: #f0f2f5;
-      --fg: #ffffff;
       --text: #1c1e21;
       --bubble: #e4e6eb;
+      --self: #0084ff;
     }
     body.dark {
       --bg: #18191a;
-      --fg: #242526;
-      --text: #ddd;
+      --text: #e4e6eb;
       --bubble: #3a3b3c;
+      --self: #4e9eff;
     }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
+      padding: 0;
+      background-color: var(--bg);
       color: var(--text);
-      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
       overflow: hidden;
     }
-
-    #app {
+    #loginPage, #chatPage {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       display: none;
       flex-direction: column;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    header {
-      height: 60px;
-      background: var(--fg);
-      display: flex;
+      justify-content: center;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      font-weight: bold;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      z-index: 2;
     }
-
-    #messages-wrapper {
-      flex: 1;
-      overflow-y: auto;
+    #loginPage.active, #chatPage.active {
       display: flex;
-      flex-direction: column;
-      padding: 12px;
-      gap: 8px;
-      background: var(--bg);
-      margin-bottom: 60px; /* leave space for input bar */
     }
-
-    .message {
-      background: var(--bubble);
-      padding: 10px 14px;
-      border-radius: 16px;
-      max-width: 80%;
-      word-wrap: break-word;
-      animation: popin 0.3s ease;
-    }
-
-    .meta {
-      font-size: 12px;
-      opacity: 0.7;
-      margin-bottom: 4px;
-    }
-
-    @keyframes popin {
-      from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    #input-area {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: var(--fg);
-      display: flex;
-      padding: 8px;
-      box-sizing: border-box;
-      border-top: 1px solid #ccc;
-    }
-
-    #msg {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 14px;
-    }
-
-    #send {
-      padding: 10px 16px;
-      margin-left: 8px;
-      background: #007bff;
-      border: none;
-      border-radius: 20px;
-      color: white;
-      font-weight: bold;
-    }
-
-    #login {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--fg);
+    .box {
+      background: white;
       padding: 20px;
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
       width: 90%;
-      max-width: 360px;
-      z-index: 5;
+      max-width: 400px;
     }
-
-    #settings-panel {
-      position: fixed;
-      right: -100%;
-      top: 0;
-      width: 80%;
-      max-width: 300px;
-      height: 100%;
-      background: var(--fg);
-      padding: 16px;
-      transition: right 0.3s ease;
-      z-index: 10;
-      box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-    }
-
-    #settings-panel.show {
-      right: 0;
-    }
-
-    .badge {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-    }
-
-    input, select, button {
-      font-size: 16px;
-    }
-
-    button {
-      border: none;
+    .input {
+      margin: 10px 0;
+      width: 100%;
       padding: 10px;
-      border-radius: 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
     }
-
-    .btn-blue {
-      background: #007bff;
+    button {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: var(--self);
       color: white;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
     }
-
-    .btn-gray {
-      background: #ccc;
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      width: 100%;
+      padding: 10px;
     }
-
-    #typingIndicator {
-      font-size: 13px;
-      padding: 5px 12px;
-      color: gray;
-      background: var(--bg);
+    .message {
+      background: var(--bubble);
+      margin: 5px;
+      padding: 10px;
+      border-radius: 12px;
+      max-width: 80%;
+    }
+    .self {
+      background: var(--self);
+      color: white;
+      align-self: flex-end;
+    }
+    #inputBar {
+      display: flex;
+      padding: 10px;
+      background: white;
+      border-top: 1px solid #ccc;
+    }
+    #inputBar input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    #inputBar button {
+      margin-left: 10px;
+    }
+    #settingsBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    #settingsMenu {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      display: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    #settingsMenu.active {
+      display: block;
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <header>
-      <span id="user-display">Messenger</span>
-      <button id="settings-btn">⚙️</button>
-    </header>
-
-    <div id="messages-wrapper">
-      <div id="messages"></div>
-    </div>
-    <div id="typingIndicator"></div>
-
-    <div id="input-area">
-      <input type="text" id="msg" placeholder="Type a message..." />
-      <button id="send">Send</button>
+  <div id="loginPage" class="active">
+    <div class="box">
+      <input id="email" type="email" class="input" placeholder="Email">
+      <input id="password" type="password" class="input" placeholder="Password">
+      <button onclick="signUp()">Sign Up</button>
+      <button onclick="login()">Login</button>
     </div>
   </div>
 
-  <div id="login">
-    <h3>Sign In / Sign Up</h3>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="signup" class="btn-blue">Sign Up</button>
-    <button id="login-btn" class="btn-gray">Log In</button>
+  <div id="chatPage">
+    <button id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+    <div id="settingsMenu">
+      <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+    <div id="chat"></div>
+    <div id="inputBar">
+      <input id="msgInput" type="text" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
-
-  <div id="settings-panel">
-    <h3>Settings</h3>
-    <label>Display Name:</label>
-    <input type="text" id="title" placeholder="e.g. CoolKid" />
-    <label>Badge Color:</label>
-    <select id="badge-color">
-      <option value="blue">🔵 Blue</option>
-      <option value="red">🔴 Red</option>
-      <option value="green">🟢 Green</option>
-      <option value="purple">🟣 Purple</option>
-    </select>
-    <br/><br/>
-    <button id="save-settings" class="btn-blue">Save</button>
-    <button id="toggle-dark" class="btn-gray">Toggle Dark Mode</button>
-    <button id="logout" class="btn-gray">Logout</button>
-  </div>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+ <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
@@ -240,119 +151,106 @@
       messagingSenderId: "786562136202",
       appId: "1:786562136202:web:355d776f74ef55158bd573"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
 
-    const loginUI = document.getElementById("login");
-    const appUI = document.getElementById("app");
-    const msgInput = document.getElementById("msg");
-    const msgBtn = document.getElementById("send");
-    const messages = document.getElementById("messages");
-    const typing = document.getElementById("typingIndicator");
-    const userDisplay = document.getElementById("user-display");
-
-    const settingsBtn = document.getElementById("settings-btn");
-    const settingsPanel = document.getElementById("settings-panel");
+    const loginPage = document.getElementById("loginPage");
+    const chatPage = document.getElementById("chatPage");
+    const chat = document.getElementById("chat");
+    const msgInput = document.getElementById("msgInput");
 
     let currentUser = null;
-    let badgeColor = localStorage.getItem("badgeColor") || "blue";
-    let userTitle = localStorage.getItem("userTitle") || "User";
 
-    function appendMessage(name, text, time, color) {
-      const div = document.createElement("div");
-      div.className = "message";
-      div.innerHTML = `<div class="meta"><span class="badge" style="background:${color}"></span><b>${name}</b> • ${time}</div>${text}`;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => alert("Signed Up"))
+        .catch(err => alert(err.message));
     }
 
-    msgBtn.onclick = () => {
-      const text = msgInput.value.trim();
-      if (!text || !currentUser) return;
-      const msg = {
-        uid: currentUser.uid,
-        title: userTitle,
-        text,
-        time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-        color: badgeColor
-      };
-      db.ref("messages").push(msg);
-      msgInput.value = "";
-      db.ref("typing/" + currentUser.uid).remove();
-    };
-
-    msgInput.oninput = () => {
-      if (!currentUser) return;
-      db.ref("typing/" + currentUser.uid).set(userTitle + " is typing...");
-      clearTimeout(msgInput._timeout);
-      msgInput._timeout = setTimeout(() => {
-        db.ref("typing/" + currentUser.uid).remove();
-      }, 2000);
-    };
-
-    db.ref("messages").on("child_added", snap => {
-      const m = snap.val();
-      appendMessage(m.title, m.text, m.time, m.color || "blue");
-    });
-
-    db.ref("typing").on("value", snap => {
-      const val = snap.val() || {};
-      const texts = Object.values(val);
-      typing.textContent = texts.length ? texts[0] : "";
-    });
-
-    document.getElementById("signup").onclick = () => {
+    function login() {
       const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-    };
-
-    document.getElementById("login-btn").onclick = () => {
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message));
-    };
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {})
+        .catch(err => alert(err.message));
+    }
 
     auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
-        loginUI.style.display = "none";
-        appUI.style.display = "flex";
-        userDisplay.innerHTML = `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
-        if (localStorage.getItem("darkMode") === "true") {
-          document.body.classList.add("dark");
-        }
+        loginPage.classList.remove("active");
+        chatPage.classList.add("active");
+        chat.innerHTML = ''; // clear previous
+        loadMessages();
       } else {
-        appUI.style.display = "none";
-        loginUI.style.display = "flex";
+        chatPage.classList.remove("active");
+        loginPage.classList.add("active");
       }
     });
 
-    settingsBtn.onclick = () => {
-      settingsPanel.classList.toggle("show");
-      document.getElementById("title").value = userTitle;
-      document.getElementById("badge-color").value = badgeColor;
-    };
+    function sendMessage() {
+      const text = msgInput.value;
+      if (!text) return;
+      const msg = {
+        uid: currentUser.uid,
+        text,
+        timestamp: Date.now()
+      };
+      db.ref("messages").push(msg);
+      msgInput.value = "";
+    }
 
-    document.getElementById("save-settings").onclick = () => {
-      userTitle = document.getElementById("title").value || "User";
-      badgeColor = document.getElementById("badge-color").value || "blue";
-      localStorage.setItem("userTitle", userTitle);
-      localStorage.setItem("badgeColor", badgeColor);
-      userDisplay.innerHTML = `<span class="badge" style="background:${badgeColor}"></span> ${userTitle}`;
-      settingsPanel.classList.remove("show");
-    };
+    function loadMessages() {
+      db.ref("messages").off();
+      db.ref("messages").on("child_added", snap => {
+        const msg = snap.val();
+        const div = document.createElement("div");
+        div.classList.add("message");
+        if (msg.uid === currentUser.uid) div.classList.add("self");
+        div.textContent = msg.text;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+      });
+    }
 
-    document.getElementById("toggle-dark").onclick = () => {
-      document.body.classList.toggle("dark");
-      localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-    };
-
-    document.getElementById("logout").onclick = () => {
+    function logout() {
       auth.signOut();
-      location.reload();
-    };
+    }
+
+    function toggleSettings() {
+      document.getElementById("settingsMenu").classList.toggle("active");
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+    // Typing Indicator Setup
+let typingTimeout;
+msgInput.addEventListener("input", () => {
+  db.ref("typing/" + currentUser.uid).set(true);
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    db.ref("typing/" + currentUser.uid).remove();
+  }, 2000);
+});
+
+// Show who is typing
+db.ref("typing").on("value", snap => {
+  document.querySelectorAll(".typing").forEach(e => e.remove());
+  snap.forEach(child => {
+    if (child.key !== currentUser.uid) {
+      const typing = document.createElement("div");
+      typing.className = "typing message";
+      typing.textContent = "Someone is typing...";
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  });
+});
   </script>
 </body>
-  </html>
+</html>
