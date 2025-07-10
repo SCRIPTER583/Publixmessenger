@@ -1,124 +1,144 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Public Messenger</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chat App</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-      background: white;
-    }
-
-    .message {
-      padding: 6px 10px;
-      margin-bottom: 6px;
-      background: #e1f5fe;
-      border-radius: 6px;
-      word-wrap: break-word;
-    }
-
-    form {
-      display: flex;
-      flex-direction: row;
-      gap: 5px;
-      padding: 10px;
-      background: #ddd;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 14px;
-      border: none;
-      border-radius: 5px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-    }
-
-    #username {
-      width: 25%;
-    }
-
-    #send {
-      background: #2196f3;
-      color: white;
-    }
-
-    @media (max-width: 600px) {
-      #username {
-        width: 30%;
-      }
-
-      input, button {
-        font-size: 12px;
-        padding: 8px;
-      }
-    }
+    body { margin:0; font-family:Arial,sans-serif; }
+    .hidden { display:none; }
+    #login, #chat { max-width:500px; margin:auto; padding:10px; height:100vh; box-sizing:border-box; }
+    #chat { display:flex; flex-direction:column; }
+    #messages { flex:1; overflow-y:auto; background:#fff; padding:10px; }
+    .msg { background:#e1f5fe; margin:6px 0; padding:8px; border-radius:8px; }
+    form { display:flex; gap:8px; }
+    input, button, select { padding:10px; font-size:14px; border-radius:5px; }
+    #user-info { display:flex; justify-content:space-between; align-items:center; }
+    #settings { position:relative; }
+    #menu { position:absolute; top:24px; right:0; background:#fff; border:1px solid #ccc; border-radius:4px; padding:5px; width:180px; }
+    #menu button, #menu input, #menu select { margin-bottom:8px; width:100%; }
+    .badge { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:5px; vertical-align:middle; }
   </style>
 </head>
 <body>
 
+<div id="login">
+  <h2>Sign Up / Login</h2>
+  <input id="email" type="email" placeholder="Email"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
+  <button id="signup">Sign Up</button>
+  <button id="login-btn">Log In</button>
+</div>
+
+<div id="chat" class="hidden">
+  <div id="user-info">
+    <span id="username-display"></span>
+    <div id="settings"><button>⚙️</button>
+      <div id="menu" class="hidden">
+        <label>Pick a color</label>
+        <select id="colorPicker">
+          <option value="red">🔴 Red</option>
+          <option value="blue">🔵 Blue</option>
+          <option value="green">🟢 Green</option>
+          <option value="purple">🟣 Purple</option>
+          <option value="orange">🟠 Orange</option>
+        </select>
+        <input id="titleText" type="text" placeholder="Your profile title">
+        <button id="saveProfile">Save</button>
+        <button id="logout">Log Out</button>
+      </div>
+    </div>
+  </div>
   <div id="messages"></div>
+  <form id="msg-form"><input id="text" type="text" placeholder="Message..."><button>Send</button></form>
+</div>
 
-  <form onsubmit="sendMessage(event)">
-    <input id="username" type="text" placeholder="Your Name" required />
-    <input id="text" type="text" placeholder="Message..." required />
-    <button id="send">Send</button>
-  </form>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const cfg = {
+  apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
+  authDomain: "publicmessenger-1a1a2.firebaseapp.com",
+  databaseURL: "https://publicmessenger-1a1a2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "publicmessenger-1a1a2",
+  storageBucket: "publicmessenger-1a1a2.appspot.com",
+  messagingSenderId: "786562136202",
+  appId: "1:786562136202:web:355d776f74ef55158bd573"
+};
+firebase.initializeApp(cfg);
+const auth = firebase.auth(), db = firebase.database();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+const $ = id => document.getElementById(id);
+['signup','login-btn','logout'].forEach(id=>$(id).onclick = authHandler);
+function authHandler(e){
+  const em = $('email').value, pw = $('password').value;
+  if (e.target.id==='signup') auth.createUserWithEmailAndPassword(em,pw).catch(alert);
+  else if(e.target.id==='login-btn') auth.signInWithEmailAndPassword(em,pw).catch(alert);
+  else auth.signOut();
+}
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCJMj0T5Hny_pCmfcwA_BQVU6HU6OX9QXU",
-      authDomain: "publicmessenger-1a1a2.firebaseapp.com",
-      databaseURL: "https://publicmessenger-1a1a2-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "publicmessenger-1a1a2",
-      storageBucket: "publicmessenger-1a1a2.appspot.com",
-      messagingSenderId: "786562136202",
-      appId: "1:786562136202:web:355d776f74ef55158bd573",
-      measurementId: "G-6S51JM376R"
-    };
+auth.onAuthStateChanged(user=>{
+  if(user){
+    $('login').classList.add('hidden');
+    $('chat').classList.remove('hidden');
+    $('username-display').textContent = user.email.split("@")[0];
+    attachMessages();
+  } else {
+    $('chat').classList.add('hidden');
+    $('login').classList.remove('hidden');
+  }
+});
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const messagesRef = db.ref("messages");
+function getProfile(){
+  return {
+    color: localStorage.getItem("color") || "blue",
+    title: localStorage.getItem("title") || ""
+  };
+}
 
-    messagesRef.on("child_added", (data) => {
-      const msg = data.val();
-      const div = document.createElement("div");
-      div.classList.add("message");
-      div.textContent = `${msg.user}: ${msg.text}`;
-      document.getElementById("messages").appendChild(div);
-      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+function attachMessages(){
+  const msgs = db.ref('messages');
+  msgs.off();
+  $('messages').innerHTML = '';
+  msgs.on('child_added',snap=>{
+    const {user,text,color,title}=snap.val();
+    const div = document.createElement('div');
+    div.className = 'msg';
+    div.innerHTML = `<span class="badge" style="background:${color};"></span><b>[${title}] ${user}:</b> ${text}`;
+    $('messages').appendChild(div);
+    $('messages').scrollTop = $('messages').scrollHeight;
+  });
+}
+
+$('msg-form').onsubmit = e=>{
+  e.preventDefault();
+  const text = $('text').value.trim();
+  if (text && auth.currentUser){
+    const { color, title } = getProfile();
+    db.ref('messages').push({
+      user: auth.currentUser.email.split("@")[0],
+      text,
+      color,
+      title
     });
+    $('text').value = '';
+  }
+};
 
-    function sendMessage(e) {
-      e.preventDefault();
-      const user = document.getElementById("username").value.trim();
-      const text = document.getElementById("text").value.trim();
-      if (user && text) {
-        messagesRef.push({ user, text });
-        document.getElementById("text").value = "";
-      }
-    }
-  </script>
+$('settings > button').onclick = () => $('menu').classList.toggle('hidden');
+$('saveProfile').onclick = () => {
+  const color = $('colorPicker').value;
+  const title = $('titleText').value.slice(0, 30);
+  localStorage.setItem("color", color);
+  localStorage.setItem("title", title);
+  $('menu').classList.add("hidden");
+};
 
+window.onload = () => {
+  $('colorPicker').value = localStorage.getItem("color") || "blue";
+  $('titleText').value = localStorage.getItem("title") || "";
+};
+</script>
 </body>
 </html>
